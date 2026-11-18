@@ -10,13 +10,13 @@ const HEADERS = ['Name', 'Joined at'];
 // For a standalone Apps Script project, paste the Sheet ID from its URL here.
 const SPREADSHEET_ID = '1RnUqoFjbQbjuppKmWtTzmUYt-rptyVSyJiX_EbEOIN4';
 // Keep in sync with the client-side English + Filipino profanity / slur lists in app.js.
-const WHOLE_WORD_BLOCKED = ['dick', 'fag', 'rape'];
+const WHOLE_WORD_BLOCKED = ['dick', 'fag', 'rape', 'coon'];
 const BLOCKED_WORDS = [
   'fuck', 'fucking', 'fucker', 'fuckface', 'motherfucker', 'fck', 'fuk', 'fuq', 'phuck',
   'shit', 'shitty', 'bullshit', 'bullshitter', 'shithead', 'shitbag', 'shitfuck', 'shite', 'bitch', 'bitches', 'sonofabitch', 'bastard',
   'asshole', 'arsehole', 'asswipe', 'asshat', 'dumbass', 'jackass', 'cunt', 'dickhead', 'cock', 'cocksucker', 'pussy', 'whore', 'slut', 'twat', 'prick',
   'wanker', 'bollocks', 'tosser', 'fucktard', 'porn', 'pornhub', 'hentai', 'dildo', 'handjob', 'blowjob', 'rimjob', 'jerkoff', 'jackoff', 'masturbate', 'masturbation', 'cumshot', 'cumslut', 'jizz', 'orgasm', 'titties', 'boobs', 'boobies', 'ballsack', 'rapist', 'molest', 'pedophile', 'bestiality',
-  'nigger', 'nigga', 'faggot', 'dyke', 'kike', 'chink', 'spic', 'wetback', 'tranny', 'retard', 'coon', 'raghead',
+  'nigger', 'nigga', 'faggot', 'dyke', 'kike', 'chink', 'spic', 'wetback', 'tranny', 'retard', 'raghead',
   'putangina', 'putanginamo', 'putanginaka', 'potangina', 'potanginamo', 'tangina', 'tanginamo', 'tanginaka', 'tngina', 'tngn', 'amputa', 'ampota', 'pota', 'puta', 'pukinamo', 'pukinangina', 'pakingshet',
   'puki', 'puke', 'pekpek', 'kiki', 'tite', 'titi', 'etits', 'burat', 'kantot', 'kantutan', 'jakol', 'pokpok',
   'gago', 'gaga', 'gagi', 'bobo', 'tanga', 'ulol', 'kupal', 'tarantado', 'punyeta', 'pakshet', 'pakshit', 'pakyu',
@@ -79,14 +79,20 @@ function moderationText_(value) {
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[4@]/g, 'a').replace(/[3]/g, 'e').replace(/[1!|]/g, 'i')
     .replace(/[0]/g, 'o').replace(/[5$]/g, 's').replace(/[7+]/g, 't')
-    .replace(/ph/g, 'f').replace(/([a-z])\1+/g, '$1');
+    .replace(/ph/g, 'f');
 }
 function normalizeForModeration_(value) {
   return moderationText_(value).replace(/[^a-z]/g, '');
 }
+function moderationPattern_(word) {
+  return normalizeForModeration_(word).split('').map(letter => letter + '+').join('[^a-z]*');
+}
 function hasWholeWordBlock_(separated, word) {
-  const pattern = word.split('').join('[^a-z]*');
+  const pattern = moderationPattern_(word);
   return new RegExp('(?:^|[^a-z])' + pattern + '(?:$|[^a-z])').test(separated);
+}
+function hasBlockedWord_(separated, word) {
+  return new RegExp(moderationPattern_(word)).test(separated);
 }
 
 function addName_(rawName) {
@@ -95,9 +101,8 @@ function addName_(rawName) {
   if ([...name].length > 30) return { ok: false, message: 'Names must be 30 characters or fewer.' };
   if (/[,;&/+]|\band\b/i.test(name)) return { ok: false, message: 'Please submit one explorer per entry.' };
   const separated = moderationText_(name);
-  const normalized = normalizeForModeration_(name);
   const wholeWordBlocked = WHOLE_WORD_BLOCKED.some(word => hasWholeWordBlock_(separated, word));
-  if (wholeWordBlocked || BLOCKED_WORDS.some(word => normalized.includes(normalizeForModeration_(word)))) {
+  if (wholeWordBlocked || BLOCKED_WORDS.some(word => hasBlockedWord_(separated, word))) {
     return { ok: false, message: 'Please choose a nickname without profanity or slurs.' };
   }
 

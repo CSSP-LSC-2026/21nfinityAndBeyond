@@ -9,13 +9,13 @@ const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwfUY2wt
 const STORAGE_KEY = "21nfinityAndBeyond.explorers.v1";
 const TAG_COLORS = ["tag-yellow", "tag-red", "tag-blue", "tag-green", "tag-pink"];
 // Curated English and Filipino profanity / slur terms. This is a practical local filter, not a claim to cover every language or spelling.
-const WHOLE_WORD_PROFANITY = ["dick", "fag", "rape"];
+const WHOLE_WORD_PROFANITY = ["dick", "fag", "rape", "coon"];
 const PROFANITY = [
   "fuck", "fucking", "fucker", "fuckface", "motherfucker", "fck", "fuk", "fuq", "phuck",
   "shit", "shitty", "bullshit", "bullshitter", "shithead", "shitbag", "shitfuck", "shite", "bitch", "bitches", "sonofabitch", "bastard",
   "asshole", "arsehole", "asswipe", "asshat", "dumbass", "jackass", "cunt", "dickhead", "cock", "cocksucker", "pussy", "whore", "slut", "twat", "prick",
   "wanker", "bollocks", "tosser", "fucktard", "porn", "pornhub", "hentai", "dildo", "handjob", "blowjob", "rimjob", "jerkoff", "jackoff", "masturbate", "masturbation", "cumshot", "cumslut", "jizz", "orgasm", "titties", "boobs", "boobies", "ballsack", "rapist", "molest", "pedophile", "bestiality",
-  "nigger", "nigga", "faggot", "dyke", "kike", "chink", "spic", "wetback", "tranny", "retard", "coon", "raghead",
+  "nigger", "nigga", "faggot", "dyke", "kike", "chink", "spic", "wetback", "tranny", "retard", "raghead",
   "putangina", "putanginamo", "putanginaka", "potangina", "potanginamo", "tangina", "tanginamo", "tanginaka", "tngina", "tngn", "amputa", "ampota", "pota", "puta", "pukinamo", "pukinangina", "pakingshet",
   "puki", "puke", "pekpek", "kiki", "tite", "titi", "etits", "burat", "kantot", "kantutan", "jakol", "pokpok",
   "gago", "gaga", "gagi", "bobo", "tanga", "ulol", "kupal", "tarantado", "punyeta", "pakshet", "pakshit", "pakyu",
@@ -56,17 +56,19 @@ function moderationText(value) {
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[4@]/g, "a").replace(/[3]/g, "e").replace(/[1!|]/g, "i")
     .replace(/[0]/g, "o").replace(/[5$]/g, "s").replace(/[7+]/g, "t")
-    .replace(/ph/g, "f").replace(/([a-z])\1+/g, "$1");
+    .replace(/ph/g, "f");
 }
 function normalizeForModeration(value) { return moderationText(value).replace(/[^a-z]/g, ""); }
+function moderationPattern(word) {
+  return normalizeForModeration(word).split("").map((letter) => `${letter}+`).join("[^a-z]*");
+}
 function isProfane(value) {
   const separated = moderationText(value);
-  const compact = separated.replace(/[^a-z]/g, "");
   const wholeWordMatch = WHOLE_WORD_PROFANITY.some((word) => {
-    const pattern = word.split("").join("[^a-z]*");
+    const pattern = moderationPattern(word);
     return new RegExp(`(?:^|[^a-z])${pattern}(?:$|[^a-z])`).test(separated);
   });
-  return wholeWordMatch || PROFANITY.some((word) => compact.includes(normalizeForModeration(word)));
+  return wholeWordMatch || PROFANITY.some((word) => new RegExp(moderationPattern(word)).test(separated));
 }
 function duplicateName(value) { return names.some((item) => item.name.toLocaleLowerCase() === value.toLocaleLowerCase()); }
 function updateCount() {
