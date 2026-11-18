@@ -1,11 +1,8 @@
 /*
  * 21nfinityAndBeyond — small, framework-free interaction layer.
- * Easy edits: palette lives in styles.css; letter copy and Apps Script URL live here.
+ * Easy edits: palette lives in styles.css; letter copy lives here.
  */
 const LETTER_COPY = "Dear RAJAHs, you've been chosen for something special. CSSP College Week is here, and this year we're going to infinity and beyond. Grab your friends, find your spark, and make this week one to remember. Sign the board below to show you're part of the adventure.";
-// Paste the deployed Google Apps Script web-app URL here to sync names for all visitors.
-// Leave empty to use this browser's localStorage only.
-const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwfUY2wtn0457S6pAih69VQgnyI9S7EYvYQ7z0ufHAMC6SzZg5cPyVfFZXoTfsXwKP4CA/exec";
 const LEGACY_STORAGE_KEY = "21nfinityAndBeyond.explorers.v1";
 const STORAGE_KEY = "21nfinityAndBeyond.explorers.v2";
 try { localStorage.removeItem(LEGACY_STORAGE_KEY); } catch (_) { /* storage may be disabled */ }
@@ -39,7 +36,6 @@ let names = [];
 let soundEnabled = false;
 let audioContext;
 let toastTimer;
-let jsonpSequence = 0;
 
 $("#letterBody").textContent = LETTER_COPY;
 
@@ -125,33 +121,26 @@ function showToast(message) {
   toastTimer = setTimeout(() => toast.classList.remove("show"), 1900);
 }
 
-// JSONP keeps the simple Apps Script endpoint usable from a static site without a server/CORS setup.
-function requestSheet(action, values = {}) {
-  return new Promise((resolve, reject) => {
-    if (!GOOGLE_APPS_SCRIPT_URL) return reject(new Error("No shared sheet configured"));
-    const callback = `__21nfinityCallback${++jsonpSequence}`;
-    const script = document.createElement("script");
-    const timer = setTimeout(() => finish(new Error("The board is taking a little while to respond.")), 9000);
-    function finish(error, result) {
-      clearTimeout(timer);
-      delete window[callback];
-      script.remove();
-      error ? reject(error) : resolve(result);
-    }
-    window[callback] = (result) => finish(null, result);
-    script.onerror = () => finish(new Error("Couldn't reach the shared name board."));
-    const params = new URLSearchParams({ action, callback, ...values, _: Date.now().toString() });
-    script.src = `${GOOGLE_APPS_SCRIPT_URL}${GOOGLE_APPS_SCRIPT_URL.includes("?") ? "&" : "?"}${params}`;
-    document.head.append(script);
+// Cloudflare Pages Function serves this same-origin API; no cross-origin JSONP is needed.
+async function requestNames(method = "GET", name = "") {
+  const response = await fetch("/api/names", {
+    method,
+    headers: method === "POST" ? { "Content-Type": "application/json" } : {},
+    body: method === "POST" ? JSON.stringify({ name }) : undefined,
+    cache: "no-store"
   });
+  const result = await response.json().catch(() => null);
+  if (!response.ok || !result || result.ok !== true) {
+    throw new Error(result?.message || `Shared board request failed (${response.status}).`);
+  }
+  return result;
 }
 async function loadNames() {
   names = readLocalNames();
   renderNames();
-  if (!GOOGLE_APPS_SCRIPT_URL) return;
   try {
-    const result = await requestSheet("list");
-    if (!result || result.ok !== true || !Array.isArray(result.names)) throw new Error("Invalid board response");
+    const result = await requestNames();
+    if (!Array.isArray(result.names)) throw new Error("Invalid board response.");
     const localNames = names;
     const byName = new Map();
     result.names.forEach((entry) => {
@@ -167,7 +156,7 @@ async function loadNames() {
     saveLocalNames();
     renderNames();
   } catch (error) {
-    // Keep the visitor's locally cached wall usable when the shared connection is offline.
+    // Keep the visitor's local wall usable if the Pages Function is temporarily offline.
     console.info("Using the local adventure wall:", error.message);
   }
 }
@@ -307,17 +296,11 @@ nameForm.addEventListener("submit", async (event) => {
   submitButton.disabled = true;
   submitButton.textContent = "Adding your name…";
   try {
-    if (GOOGLE_APPS_SCRIPT_URL) {
-      const result = await requestSheet("add", { name });
-      if (!result || result.ok !== true) throw new Error(result?.message || "The board couldn't save your name.");
-      entry.shared = true;
-      saveLocalNames();
-      say("You're on the shared wall!", "success");
-      showWelcome(name, true);
-    } else {
-      say("You're on the wall! This browser has saved your name.", "success");
-      showWelcome(name, false);
-    }
+    await requestNames("POST", name);
+    entry.shared = true;
+    saveLocalNames();
+    say("You're on the shared wall!", "success");
+    showWelcome(name, true);
   } catch (error) {
     say(`Saved on this browser only. The shared board didn't save it: ${error.message}`);
     showWelcome(name, false);

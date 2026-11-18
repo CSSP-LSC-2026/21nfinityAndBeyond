@@ -1,45 +1,53 @@
 # 21nfinityAndBeyond · CSSP College Week
 
-A responsive, single-page celebration for CSSP College Week. The experience is built with plain HTML, CSS, and JavaScript: open the attic box to reveal a letter, then add a name to the adventure wall.
+A responsive, single-page celebration for CSSP College Week. The experience is built with plain HTML, CSS, and JavaScript: open the attic box to reveal a letter, then add one name to the shared adventure wall. On Cloudflare Pages, names are stored in Cloudflare D1 through a Pages Function (no Google Apps Script or cross-origin JSONP required).
 
 ## Run locally
 
-Open `index.html` directly, or run a static server from this folder:
+Open `index.html` directly to preview the static interface, or serve the files with:
 
 ```sh
 python3 -m http.server 8000 --bind 0.0.0.0
 ```
 
-Names are stored in this browser using `localStorage` until a shared Google Sheet is configured.
+The shared name API requires Cloudflare Pages Functions and a D1 binding. To test the full stack locally after configuring a D1 database, use `wrangler pages dev` from the repository root.
 
 ## Deploy to Cloudflare Pages
 
-This is a static HTML/CSS/JavaScript site; it does not need a framework, package install, or server runtime. `build-cloudflare.sh` copies just the site and its required images into `dist/`.
+This is a static site plus a Pages Function; no framework or npm build dependencies are needed. The build script copies the web assets (and only those assets) to `dist/`.
 
-For a Cloudflare Pages project connected to this Git repository, use:
+For a Cloudflare Pages Git-connected project, set:
 
+- **Root directory:** `/`
 - **Build command:** `sh ./build-cloudflare.sh`
 - **Build output directory:** `dist`
-- **Root directory:** `/` (the repository root)
 
-Do not set a custom deploy command for a Pages Git deployment; Pages handles publishing after the build. In particular, `npx wrangler deploy` is the Worker deploy command, not the Pages command, and is what caused Wrangler to look for a Worker static-assets configuration and fail. For a manual Wrangler upload instead, first build the files and then run `npx wrangler pages deploy dist --project-name YOUR_PAGES_PROJECT_NAME` (replace the placeholder with the Pages project name you created).
+Pages handles the deployment after the build; do not use `npx wrangler deploy` (that deploys a Worker, not a Pages site). If the Cloudflare workflow requires explicit commands, use these from the repository root:
 
-## Connect a Google Sheet
+- **Deploy command:** `npx wrangler pages deploy dist --project-name YOUR_PAGES_PROJECT_NAME`
+- **Preview command:** `npx wrangler pages dev dist --ip 0.0.0.0 --port 8788 --d1 DB=YOUR_D1_DATABASE_ID`
 
-1. Create a Google Sheet and open **Extensions → Apps Script**.
-2. Paste the contents of [`apps-script/Code.gs`](apps-script/Code.gs) into the editor. The script creates an `Explorers` tab and headings the first time it runs. `SPREADSHEET_ID` is configured for the Sheet you provided; change it if you switch to another spreadsheet.
-3. Select **Deploy → New deployment → Web app**. Set **Execute as** to *Me* and access to *Anyone*, then deploy and authorize it. (Anyone with the URL can submit a name; use only for a public event board.)
-4. Copy the deployed Web app URL into `GOOGLE_APPS_SCRIPT_URL` near the top of `app.js`.
-5. Reload the site. The Apps Script endpoint reads and appends names in the spreadsheet; if the endpoint is temporarily unavailable, the page keeps the visitor's locally cached names.
-6. Test the endpoint by opening its URL with `?action=list` appended; it should return JSON with `ok: true` and a `names` array. Then test a sample name from the site and confirm it appears in the `Explorers` tab.
+Replace each placeholder with your Pages project name and D1 database ID. The preview command binds the local Pages preview to D1; apply the schema locally first if you want the preview API to return data. The `functions/` directory must remain at the repository root so Pages can deploy the `/api/names` Function along with the static output.
 
-The endpoint uses JSONP to work from a static site without a separate server or CORS setup. Names are validated on both the page and Apps Script side, including one explorer per submission and a common English/Filipino profanity filter. If you change `Code.gs` later, open **Deploy → Manage deployments**, edit the web app, choose **New version**, and deploy again. For a public deployment, anyone with the endpoint URL can submit a name, so use it only for a public event board and consider moderation/quotas.
+## Set up Cloudflare D1
+
+1. In the Cloudflare dashboard, create a **D1 database** (for example, `cssp-explorers`). Or from an authenticated terminal run `npx wrangler d1 create cssp-explorers`.
+2. Create the table by applying the included migration. From the repository root, run:
+
+   ```sh
+   npx wrangler d1 execute cssp-explorers --remote --file=migrations/0001_create_explorers.sql
+   ```
+
+   If you chose a different database name, use that name in the command.
+3. In the Pages project, open **Settings → Functions → D1 database bindings**. Add a binding with variable name **`DB`**, choose the database you created, save, and redeploy. Set the binding for both Production and Preview environments if you use both.
+4. Open `https://YOUR_SITE_DOMAIN/api/names`. A configured, empty board should return JSON like `{"ok":true,"names":[]}`. Submit a name on the site and confirm it appears in the response and the D1 `explorers` table.
+
+The Pages Function in [`functions/api/names.js`](functions/api/names.js) handles `GET /api/names` and `POST /api/names`; the schema is in [`migrations/0001_create_explorers.sql`](migrations/0001_create_explorers.sql). The frontend uses same-origin `fetch`, so it does not depend on CORS or a Google Apps Script URL. It keeps a browser-local fallback if the Pages API is temporarily unavailable; successful submissions are stored in D1 and shared across visitors.
 
 ## Easy edits
 
 - Letter text: `LETTER_COPY` in `app.js`
 - Palette and fonts: CSS variables at the top of `styles.css`
-- Google Sheets connection: `GOOGLE_APPS_SCRIPT_URL` in `app.js`
-- Logo / favicon: `assets/21nfinity-logo.png` (the supplied transparent logo)
-- Bedroom backdrop: `assets/bedroom-backdrop.jpg` (original generated room scene)
-- Nickname moderation terms: `PROFANITY` in `app.js` and `BLOCKED_WORDS` in `apps-script/Code.gs`
+- Logo / favicon: `assets/21nfinity-logo.png`
+- Bedroom backdrop: `assets/bedroom-backdrop.jpg`
+- Nickname moderation: the client filter in `app.js` and server-side validation in `functions/api/names.js`

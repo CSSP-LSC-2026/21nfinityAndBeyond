@@ -1,2 +1,4 @@
-# Generated Cloudflare Pages build output
+# Generated Cloudflare Pages build output and local Wrangler state
 dist/
+.wrangler/
+_worker.bundle
