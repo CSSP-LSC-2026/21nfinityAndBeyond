@@ -5,7 +5,7 @@
 const LETTER_COPY = "Dear RAJAHs, you've been chosen for something special. CSSP College Week is here, and this year we're going to infinity and beyond. Grab your friends, find your spark, and make this week one to remember. Sign the board below to show you're part of the adventure.";
 // Paste the deployed Google Apps Script web-app URL here to sync names for all visitors.
 // Leave empty to use this browser's localStorage only.
-const GOOGLE_APPS_SCRIPT_URL = "";
+const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwfUY2wtn0457S6pAih69VQgnyI9S7EYvYQ7z0ufHAMC6SzZg5cPyVfFZXoTfsXwKP4CA/exec";
 const STORAGE_KEY = "21nfinityAndBeyond.explorers.v1";
 const TAG_COLORS = ["tag-yellow", "tag-red", "tag-blue", "tag-green", "tag-pink"];
 // Curated English and Filipino profanity / slur terms. This is a practical local filter, not a claim to cover every language or spelling.
