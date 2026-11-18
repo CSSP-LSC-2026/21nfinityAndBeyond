@@ -27,6 +27,7 @@ const stage = $(".scene-stage");
 const box = $("#atticBox");
 const openBoxButton = $("#openBox");
 const dialog = $("#letterDialog");
+const welcomeDialog = $("#welcomeDialog");
 const nameForm = $("#nameForm");
 const nameInput = $("#nameInput");
 const nameTags = $("#nameTags");
@@ -93,6 +94,25 @@ function say(message, type = "") {
   formMessage.textContent = message;
   formMessage.classList.toggle("success", type === "success");
 }
+function hasMultipleNames(value) {
+  return /[,;&/+\n\r]|\band\b/i.test(value);
+}
+function showWelcome(name, shared) {
+  $("#welcomeName").textContent = name;
+  $("#welcomeShareNote").textContent = shared
+    ? "Your name is on the shared adventure wall for every explorer to see."
+    : "Your name is saved on this browser’s wall for now. Come back and find it here!";
+  if (typeof welcomeDialog.showModal === "function") welcomeDialog.showModal();
+  else welcomeDialog.setAttribute("open", "");
+}
+function closeWelcome() {
+  if (welcomeDialog.open && typeof welcomeDialog.close === "function") welcomeDialog.close();
+  else welcomeDialog.removeAttribute("open");
+  nameInput.focus({ preventScroll: true });
+}
+$("#closeWelcome").addEventListener("click", closeWelcome);
+$("#continueAdventure").addEventListener("click", closeWelcome);
+welcomeDialog.addEventListener("click", (event) => { if (event.target === welcomeDialog) closeWelcome(); });
 function showToast(message) {
   const toast = $("#toast");
   toast.textContent = message;
@@ -260,6 +280,7 @@ nameForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const name = normalizeName(nameInput.value);
   if (!name) return say("Add a name before joining the adventure.");
+  if (hasMultipleNames(nameInput.value)) return say("Add one name per entry. Please submit each explorer separately.");
   if ([...name].length > 30) return say("Keep your name to 30 characters or fewer.");
   if (isProfane(name)) return say("Let's keep the adventure friendly for everyone.");
   if (duplicateName(name)) return say("That name is already on the board. You're in!", "success");
@@ -268,18 +289,28 @@ nameForm.addEventListener("submit", async (event) => {
   names.unshift(entry);
   saveLocalNames(); renderNames();
   nameInput.value = ""; $("#characterCount").textContent = `0 / ${nameInput.maxLength}`;
-  say(GOOGLE_APPS_SCRIPT_URL ? "You're on the wall! Syncing your name…" : "You're on the wall! This browser has saved your name.", "success");
   playSound("stick");
-
-  if (GOOGLE_APPS_SCRIPT_URL) {
-    try {
+  const submitButton = nameForm.querySelector('button[type="submit"]');
+  const originalButton = submitButton.innerHTML;
+  submitButton.disabled = true;
+  submitButton.textContent = "Adding your name…";
+  try {
+    if (GOOGLE_APPS_SCRIPT_URL) {
       const result = await requestSheet("add", { name });
       if (!result || result.ok !== true) throw new Error(result?.message || "The board couldn't save your name.");
-      say("You're on the wall! Your name is shared with every explorer.", "success");
-    } catch (error) {
-      say("Saved here for now — the shared board couldn't be reached. Please try again later.");
-      console.warn("Shared board save failed:", error.message);
+      say("You're on the shared wall!", "success");
+      showWelcome(name, true);
+    } else {
+      say("You're on the wall! This browser has saved your name.", "success");
+      showWelcome(name, false);
     }
+  } catch (error) {
+    say("Saved here for now — the shared board couldn't be reached. Please try again later.");
+    showWelcome(name, false);
+    console.warn("Shared board save failed:", error.message);
+  } finally {
+    submitButton.disabled = false;
+    submitButton.innerHTML = originalButton;
   }
 });
 

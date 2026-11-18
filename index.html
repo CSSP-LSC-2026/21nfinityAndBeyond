@@ -11,7 +11,9 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="room-scene" aria-hidden="true">
+  <main id="top">
+    <div class="adventure-room">
+      <div class="room-scene" aria-hidden="true">
     <span class="ambient-star star-a">✦</span><span class="ambient-star star-b">✧</span>
     <span class="ambient-star star-c">✦</span><span class="ambient-star star-d">✧</span>
   </div>
@@ -20,7 +22,6 @@
     <div class="week-stamp"><span class="stamp-star">★</span> CSSP COLLEGE WEEK <span class="stamp-star">★</span></div>
   </header>
 
-  <main id="top">
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-copy">
         <p class="eyebrow"><span class="eyebrow-line"></span> A little adventure is waiting <span class="eyebrow-line"></span></p>
@@ -52,6 +53,7 @@
       </div>
       <a class="scroll-cue" href="#name-board"><span class="scroll-arrow">↓</span> THE ADVENTURE CONTINUES</a>
     </section>
+    </div>
 
     <section class="board-section" id="name-board" aria-labelledby="board-title">
       <div class="board-intro">
@@ -98,6 +100,19 @@
         <p class="letter-signoff">With wonder &amp; friendship,<br><span>CSSP Local Student Council</span></p>
         <a class="sign-board-link" id="signBoardLink" href="#name-board">Sign the Board <span aria-hidden="true">→</span></a>
       </div>
+    </div>
+  </dialog>
+  <dialog class="welcome-dialog" id="welcomeDialog" aria-labelledby="welcomeTitle">
+    <div class="welcome-card">
+      <button class="welcome-close" id="closeWelcome" type="button" aria-label="Close welcome message">×</button>
+      <div class="welcome-sparkles" aria-hidden="true"><span>✦</span><span>✧</span><span>✦</span></div>
+      <div class="welcome-rocket" aria-hidden="true">🚀</div>
+      <p class="welcome-kicker">MISSION ACCOMPLISHED</p>
+      <h2 id="welcomeTitle">You're on the wall,<br><span id="welcomeName">explorer</span>!</h2>
+      <p class="welcome-copy" id="welcomeShareNote">Your name is on our adventure wall.</p>
+      <div class="welcome-ribbon">See you at CSSP College Week!<small>Our next big adventure is waiting.</small></div>
+      <button class="welcome-continue" id="continueAdventure" type="button">Keep exploring <span aria-hidden="true">→</span></button>
+      <p class="welcome-signoff">To infinity and beyond <span>✦</span></p>
     </div>
   </dialog>
   <script src="app.js" defer></script>

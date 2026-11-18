@@ -19,8 +19,9 @@ Names are stored in this browser using `localStorage` until a shared Google Shee
 3. Select **Deploy → New deployment → Web app**. Set **Execute as** to *Me* and access to *Anyone*, then deploy and authorize it. (Anyone with the URL can submit a name; use only for a public event board.)
 4. Copy the deployed Web app URL into `GOOGLE_APPS_SCRIPT_URL` near the top of `app.js`.
 5. Reload the site. The Apps Script endpoint reads and appends names in the spreadsheet; if the endpoint is temporarily unavailable, the page keeps the visitor's locally cached names.
+6. Test the endpoint by opening its URL with `?action=list` appended; it should return JSON with `ok: true` and a `names` array. Then test a sample name from the site and confirm it appears in the `Explorers` tab.
 
-The endpoint uses JSONP to work from a static site without a separate server or CORS setup. Names are validated on both the page and Apps Script side. For a public deployment, share the deployed endpoint only with the intended site and consider adding quotas or moderation if needed.
+The endpoint uses JSONP to work from a static site without a separate server or CORS setup. Names are validated on both the page and Apps Script side, including one explorer per submission and a common English/Filipino profanity filter. If you change `Code.gs` later, open **Deploy → Manage deployments**, edit the web app, choose **New version**, and deploy again. For a public deployment, anyone with the endpoint URL can submit a name, so use it only for a public event board and consider moderation/quotas.
 
 ## Easy edits
 

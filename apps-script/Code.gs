@@ -81,6 +81,7 @@ function addName_(rawName) {
   const name = String(rawName || '').trim().replace(/\s+/g, ' ');
   if (!name) return { ok: false, message: 'Please enter a name.' };
   if ([...name].length > 30) return { ok: false, message: 'Names must be 30 characters or fewer.' };
+  if (/[,;&/+]|\band\b/i.test(name)) return { ok: false, message: 'Please submit one explorer per entry.' };
   const separated = moderationText_(name);
   const normalized = normalizeForModeration_(name);
   const wholeWordBlocked = WHOLE_WORD_BLOCKED.some(word => hasWholeWordBlock_(separated, word));
