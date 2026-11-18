@@ -1,4 +1,8 @@
-# Generated Cloudflare Pages build output and local Wrangler state
+# Generated Cloudflare Pages build output and local tooling
 dist/
 .wrangler/
 _worker.bundle
+node_modules/
+
+# Local secrets for Pages Functions; commit only the example file
+.dev.vars

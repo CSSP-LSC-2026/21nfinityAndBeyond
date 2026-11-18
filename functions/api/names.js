@@ -1,3 +1,5 @@
+import { neon } from "@neondatabase/serverless";
+
 const WHOLE_WORD_BLOCKED = ["dick", "fag", "rape", "coon"];
 const BLOCKED_WORDS = [
   "fuck", "fucking", "fucker", "fuckface", "motherfucker", "fck", "fuk", "fuq", "phuck",
@@ -46,20 +48,19 @@ function validateName(rawName) {
 }
 
 export async function onRequestGet({ env }) {
-  if (!env.DB) return json({ ok: false, message: "Cloudflare D1 binding DB is not configured." }, 503);
+  if (!env.DATABASE_URL) return json({ ok: false, message: "Neon DATABASE_URL is not configured for this Pages environment." }, 503);
   try {
-    const { results = [] } = await env.DB.prepare(
-      "SELECT name FROM explorers ORDER BY id DESC LIMIT 1000"
-    ).all();
-    return json({ ok: true, names: results.map(({ name }) => ({ name })) });
+    const sql = neon(env.DATABASE_URL);
+    const rows = await sql`SELECT name FROM explorers ORDER BY id DESC LIMIT 1000`;
+    return json({ ok: true, names: rows.map(({ name }) => ({ name })) });
   } catch (error) {
-    console.error("Could not read explorer names from D1:", error);
+    console.error("Could not read explorer names from Neon:", error);
     return json({ ok: false, message: "The shared adventure wall is temporarily unavailable." }, 500);
   }
 }
 
 export async function onRequestPost({ request, env }) {
-  if (!env.DB) return json({ ok: false, message: "Cloudflare D1 binding DB is not configured." }, 503);
+  if (!env.DATABASE_URL) return json({ ok: false, message: "Neon DATABASE_URL is not configured for this Pages environment." }, 503);
   let body;
   try {
     body = await request.json();
@@ -71,12 +72,15 @@ export async function onRequestPost({ request, env }) {
   if (!checked.ok) return json(checked, 400);
 
   try {
-    const result = await env.DB.prepare(
-      "INSERT INTO explorers (name) VALUES (?) ON CONFLICT(name) DO NOTHING"
-    ).bind(checked.name).run();
-    return json({ ok: true, name: checked.name, duplicate: result.meta?.changes === 0 });
+    const sql = neon(env.DATABASE_URL);
+    const inserted = await sql`
+      INSERT INTO explorers (name) VALUES (${checked.name})
+      ON CONFLICT DO NOTHING
+      RETURNING name
+    `;
+    return json({ ok: true, name: checked.name, duplicate: inserted.length === 0 });
   } catch (error) {
-    console.error("Could not save explorer name to D1:", error);
+    console.error("Could not save explorer name to Neon:", error);
     return json({ ok: false, message: "The shared adventure wall is temporarily unavailable." }, 500);
   }
 }

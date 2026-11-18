@@ -1,0 +1,3 @@
+# Copy this file to .dev.vars for local Pages Function development.
+# Paste your Neon pooled connection string after the equals sign.
+DATABASE_URL=postgresql://USER:PASSWORD@HOST/DB?sslmode=require

@@ -1,48 +1,50 @@
 # 21nfinityAndBeyond · CSSP College Week
 
-A responsive, single-page celebration for CSSP College Week. The experience is built with plain HTML, CSS, and JavaScript: open the attic box to reveal a letter, then add one name to the shared adventure wall. On Cloudflare Pages, names are stored in Cloudflare D1 through a Pages Function (no Google Apps Script or cross-origin JSONP required).
+A responsive, single-page CSSP College Week experience built with plain HTML, CSS, and JavaScript. On Cloudflare Pages, the shared name wall uses a Pages Function and a Neon Postgres database. Nickname validation and the English/Filipino blocked-word filter run in both the browser and the server; the lists are practical, not exhaustive.
 
-## Run locally
+## Cloudflare Pages setup
 
-Open `index.html` directly to preview the static interface, or serve the files with:
+The site is static files plus one Pages Function (`functions/api/names.js`). No framework or build dependencies are needed for the page itself. The build script copies only the site files into `dist/`; Cloudflare also bundles the Neon dependency for the Function.
+
+Set these Cloudflare Pages project commands:
+
+- **Root directory:** `/`
+- **Build command:** `sh ./build-cloudflare.sh`
+- **Build output directory:** `dist`
+- **Deploy command, if required:** `npx wrangler pages deploy dist --project-name YOUR_PAGES_PROJECT_NAME`
+- **Preview command, if required:** `npx wrangler pages dev dist --ip 0.0.0.0 --port 8788`
+
+Replace the project-name placeholder with the Pages project you created. Do not use `npx wrangler deploy`; that command deploys a Worker, not a Pages project. Keep the `functions/` directory at the repository root.
+
+## Connect Neon to Cloudflare Pages
+
+1. Create a project in [Neon](https://neon.tech/). In its dashboard, copy the **pooled connection string** for the database.
+2. In Neon’s **SQL Editor**, paste and run [`migrations/0001_create_explorers.sql`](migrations/0001_create_explorers.sql). It creates the `explorers` table and a case-insensitive unique index.
+3. In Cloudflare Pages, open **Settings → Variables and Secrets** and add a secret named **`DATABASE_URL`**. Paste the Neon connection string as its value. Set it for both Production and Preview if you use both, then redeploy.
+4. Visit `https://YOUR_SITE_DOMAIN/api/names`. A configured empty board returns `{"ok":true,"names":[]}`. Submit a name on the site and check the API or Neon’s table browser.
+
+The website sends same-origin `GET` and `POST` requests to `/api/names`; Cloudflare Pages runs the Function and Neon stores successful submissions for all visitors. Do not put the database connection string in client-side code or commit it to Git.
+
+### Optional local preview
+
+Copy `.dev.vars.example` to `.dev.vars`, put your Neon connection string after `DATABASE_URL=`, then run:
+
+```sh
+sh ./build-cloudflare.sh
+npx wrangler pages dev dist --ip 0.0.0.0 --port 8788
+```
+
+`.dev.vars` is git-ignored. Never share or commit the real connection string.
+
+## Run the static page without Cloudflare
+
+Open `index.html` or run a static server:
 
 ```sh
 python3 -m http.server 8000 --bind 0.0.0.0
 ```
 
-The shared name API requires Cloudflare Pages Functions and a D1 binding. To test the full stack locally after configuring a D1 database, use `wrangler pages dev` from the repository root.
-
-## Deploy to Cloudflare Pages
-
-This is a static site plus a Pages Function; no framework or npm build dependencies are needed. The build script copies the web assets (and only those assets) to `dist/`.
-
-For a Cloudflare Pages Git-connected project, set:
-
-- **Root directory:** `/`
-- **Build command:** `sh ./build-cloudflare.sh`
-- **Build output directory:** `dist`
-
-Pages handles the deployment after the build; do not use `npx wrangler deploy` (that deploys a Worker, not a Pages site). If the Cloudflare workflow requires explicit commands, use these from the repository root:
-
-- **Deploy command:** `npx wrangler pages deploy dist --project-name YOUR_PAGES_PROJECT_NAME`
-- **Preview command:** `npx wrangler pages dev dist --ip 0.0.0.0 --port 8788 --d1 DB=YOUR_D1_DATABASE_ID`
-
-Replace each placeholder with your Pages project name and D1 database ID. The preview command binds the local Pages preview to D1; apply the schema locally first if you want the preview API to return data. The `functions/` directory must remain at the repository root so Pages can deploy the `/api/names` Function along with the static output.
-
-## Set up Cloudflare D1
-
-1. In the Cloudflare dashboard, create a **D1 database** (for example, `cssp-explorers`). Or from an authenticated terminal run `npx wrangler d1 create cssp-explorers`.
-2. Create the table by applying the included migration. From the repository root, run:
-
-   ```sh
-   npx wrangler d1 execute cssp-explorers --remote --file=migrations/0001_create_explorers.sql
-   ```
-
-   If you chose a different database name, use that name in the command.
-3. In the Pages project, open **Settings → Functions → D1 database bindings**. Add a binding with variable name **`DB`**, choose the database you created, save, and redeploy. Set the binding for both Production and Preview environments if you use both.
-4. Open `https://YOUR_SITE_DOMAIN/api/names`. A configured, empty board should return JSON like `{"ok":true,"names":[]}`. Submit a name on the site and confirm it appears in the response and the D1 `explorers` table.
-
-The Pages Function in [`functions/api/names.js`](functions/api/names.js) handles `GET /api/names` and `POST /api/names`; the schema is in [`migrations/0001_create_explorers.sql`](migrations/0001_create_explorers.sql). The frontend uses same-origin `fetch`, so it does not depend on CORS or a Google Apps Script URL. It keeps a browser-local fallback if the Pages API is temporarily unavailable; successful submissions are stored in D1 and shared across visitors.
+Without the Pages Function, names can only be cached in the current browser; shared storage requires the Cloudflare deployment and `DATABASE_URL` secret.
 
 ## Easy edits
 
@@ -50,4 +52,4 @@ The Pages Function in [`functions/api/names.js`](functions/api/names.js) handles
 - Palette and fonts: CSS variables at the top of `styles.css`
 - Logo / favicon: `assets/21nfinity-logo.png`
 - Bedroom backdrop: `assets/bedroom-backdrop.jpg`
-- Nickname moderation: the client filter in `app.js` and server-side validation in `functions/api/names.js`
+- Nickname filter: client side in `app.js` and server side in `functions/api/names.js`
