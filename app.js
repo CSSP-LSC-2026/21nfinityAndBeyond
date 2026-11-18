@@ -70,7 +70,7 @@ function isProfane(value) {
   });
   return wholeWordMatch || PROFANITY.some((word) => new RegExp(moderationPattern(word)).test(separated));
 }
-function duplicateName(value) { return names.some((item) => item.name.toLocaleLowerCase() === value.toLocaleLowerCase()); }
+function findName(value) { return names.find((item) => item.name.toLocaleLowerCase() === value.toLocaleLowerCase()); }
 function updateCount() {
   const count = names.length;
   $("#explorerCount").textContent = `${count} ${count === 1 ? "explorer has" : "explorers have"} joined the adventure`;
@@ -150,9 +150,16 @@ async function loadNames() {
   try {
     const result = await requestSheet("list");
     if (!result || result.ok !== true || !Array.isArray(result.names)) throw new Error("Invalid board response");
+    const localNames = names;
     const byName = new Map();
-    [...result.names, ...names].forEach((entry) => {
-      if (entry && typeof entry.name === "string" && !byName.has(entry.name.toLowerCase())) byName.set(entry.name.toLowerCase(), entry);
+    result.names.forEach((entry) => {
+      if (entry && typeof entry.name === "string" && !byName.has(entry.name.toLowerCase())) {
+        byName.set(entry.name.toLowerCase(), { ...entry, shared: true });
+      }
+    });
+    localNames.forEach((entry) => {
+      const key = entry.name.toLowerCase();
+      if (!byName.has(key)) byName.set(key, { ...entry, shared: entry.shared === true });
     });
     names = [...byName.values()];
     saveLocalNames();
@@ -285,10 +292,11 @@ nameForm.addEventListener("submit", async (event) => {
   if (hasMultipleNames(nameInput.value)) return say("Add one name per entry. Please submit each explorer separately.");
   if ([...name].length > 30) return say("Keep your name to 30 characters or fewer.");
   if (isProfane(name)) return say("Let's keep the adventure friendly for everyone.");
-  if (duplicateName(name)) return say("That name is already on the board. You're in!", "success");
+  const existingEntry = findName(name);
+  if (existingEntry?.shared) return say("That name is already on the shared board. You're in!", "success");
 
-  const entry = { name, color: TAG_COLORS[Math.floor(Math.random() * TAG_COLORS.length)], tilt: (Math.random() * 8 - 4).toFixed(1) };
-  names.unshift(entry);
+  const entry = existingEntry || { name, color: TAG_COLORS[Math.floor(Math.random() * TAG_COLORS.length)], tilt: (Math.random() * 8 - 4).toFixed(1), shared: false };
+  if (!existingEntry) names.unshift(entry);
   saveLocalNames(); renderNames();
   nameInput.value = ""; $("#characterCount").textContent = `0 / ${nameInput.maxLength}`;
   playSound("stick");
@@ -300,6 +308,8 @@ nameForm.addEventListener("submit", async (event) => {
     if (GOOGLE_APPS_SCRIPT_URL) {
       const result = await requestSheet("add", { name });
       if (!result || result.ok !== true) throw new Error(result?.message || "The board couldn't save your name.");
+      entry.shared = true;
+      saveLocalNames();
       say("You're on the shared wall!", "success");
       showWelcome(name, true);
     } else {
@@ -307,7 +317,7 @@ nameForm.addEventListener("submit", async (event) => {
       showWelcome(name, false);
     }
   } catch (error) {
-    say("Saved here for now — the shared board couldn't be reached. Please try again later.");
+    say(`Saved on this browser only. The shared board didn't save it: ${error.message}`);
     showWelcome(name, false);
     console.warn("Shared board save failed:", error.message);
   } finally {
