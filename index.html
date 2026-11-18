@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#8fc4dc">
+  <meta name="description" content="Join the CSSP College Week adventure. Open the box, read your letter, and leave your name on the 21nfinityAndBeyond wall.">
+  <title>21nfinityAndBeyond · CSSP College Week</title>
+  <link rel="icon" type="image/png" href="assets/21nfinity-logo.png">
+  <link rel="preload" href="assets/21nfinity-logo.png" as="image" type="image/png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="room-scene" aria-hidden="true">
+    <div class="wall-stars"></div>
+    <div class="wall-trim"></div>
+    <div class="pennant pennant-one">✦</div><div class="pennant pennant-two">★</div><div class="pennant pennant-three">✦</div>
+    <div class="sunlight"></div>
+    <div class="floor"></div>
+  </div>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="21nfinityAndBeyond home"><img src="assets/21nfinity-logo.png" alt="21nfinityAndBeyond"></a>
+    <div class="week-stamp"><span class="stamp-star">★</span> CSSP COLLEGE WEEK <span class="stamp-star">★</span></div>
+  </header>
+
+  <main id="top">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="eyebrow-line"></span> A little adventure is waiting <span class="eyebrow-line"></span></p>
+        <h1 id="hero-title">Every great story<br>starts with a <em>surprise.</em></h1>
+        <p class="hero-intro">There's something special tucked inside. Give the box a tap, then leave your mark on our wall of explorers.</p>
+      </div>
+
+      <div class="scene-stage" aria-label="A cardboard box of playful toys">
+        <div class="toy-cloud" aria-hidden="true">
+          <span class="toy toy-hat">🤠</span><span class="toy toy-dino">🦖</span><span class="toy toy-pig">🐷</span>
+          <span class="toy toy-slinky">🐶</span><span class="toy toy-alien">👽</span><span class="toy toy-rocket">🚀</span>
+          <span class="toy toy-star">✨</span>
+        </div>
+        <button class="alien-egg" id="alienEgg" type="button" aria-label="Say hello to the little alien">👽</button>
+        <div class="box-shadow"></div>
+        <div class="attic-box" id="atticBox">
+          <div class="box-back"></div>
+          <div class="box-flap flap-left"></div><div class="box-flap flap-right"></div>
+          <div class="box-inside"></div>
+          <div class="box-front"><span class="box-label">ATTIC</span><span class="box-tape"></span></div>
+          <div class="box-side"></div>
+          <div class="box-handle"><span class="peek-eyes">• •</span></div>
+        </div>
+        <div class="floating-envelope" aria-hidden="true"><span>★</span></div>
+        <button class="open-box-button" id="openBox" type="button" aria-controls="letterDialog" aria-haspopup="dialog">
+          <span class="button-sparkle">✦</span> Open the box <span aria-hidden="true">→</span>
+        </button>
+        <p class="hand-hint" id="boxHint">Psst… open me!</p>
+      </div>
+      <a class="scroll-cue" href="#name-board"><span class="scroll-arrow">↓</span> THE ADVENTURE CONTINUES</a>
+    </section>
+
+    <section class="board-section" id="name-board" aria-labelledby="board-title">
+      <div class="board-intro">
+        <p class="eyebrow dark-eyebrow"><span class="eyebrow-line"></span> Leave a little proof you were here <span class="eyebrow-line"></span></p>
+        <h2 id="board-title">Our adventure wall</h2>
+        <p>Every explorer belongs in the story. Add your name and find your place on the board.</p>
+      </div>
+      <form class="name-form" id="nameForm" novalidate>
+        <label class="visually-hidden" for="nameInput">Your name or nickname</label>
+        <div class="input-wrap"><span class="input-star" aria-hidden="true">✦</span><input id="nameInput" name="name" type="text" maxlength="30" autocomplete="name" placeholder="Your name or nickname…" aria-describedby="formMessage" required><span class="character-count" id="characterCount">0 / 30</span></div>
+        <button class="add-name-button" type="submit"><span>✦</span> Add my name</button>
+        <p class="form-message" id="formMessage" role="status" aria-live="polite"></p>
+      </form>
+
+      <div class="hanging-board-wrap">
+        <div class="rope rope-left"></div><div class="rope rope-right"></div>
+        <div class="hanging-board" id="hangingBoard">
+          <span class="nail nail-tl"></span><span class="nail nail-tr"></span><span class="nail nail-bl"></span><span class="nail nail-br"></span>
+          <div class="board-heading"><span class="heading-star">✦</span><h3>The 21nfinityAndBeyond Wall</h3><span class="heading-star">✦</span></div>
+          <p class="board-subtitle">OUR CAST OF CHARACTERS</p>
+          <div class="name-tags" id="nameTags" aria-label="Names on the adventure wall"></div>
+          <div class="board-empty" id="boardEmpty"><span>✧</span><p>Your story starts here.<br><small>Be the first to add your name!</small></p><span>✧</span></div>
+          <div class="board-footer"><span>MADE OF FRIENDSHIP &amp; A LITTLE MAGIC</span><span>★ &nbsp;★ &nbsp;★</span></div>
+        </div>
+      </div>
+      <p class="explorer-count" id="explorerCount" aria-live="polite">0 explorers have joined the adventure</p>
+    </section>
+  </main>
+
+  <footer class="site-footer"><span>CSSP College Week <i>·</i> 21nfinityAndBeyond</span><span class="footer-note">TOGETHER, WE GO A LITTLE FURTHER <b>✦</b></span><a href="#top" class="back-top" aria-label="Back to top">↑</a></footer>
+  <button class="sound-toggle" id="soundToggle" type="button" aria-pressed="false" aria-label="Turn sound on"><span class="sound-icon">♪</span><span class="sound-label">Sound off</span></button>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <dialog class="letter-dialog" id="letterDialog" aria-labelledby="letterTitle">
+    <div class="letter-shell">
+      <button class="letter-close" id="closeLetter" type="button" aria-label="Close letter">×</button>
+      <div class="letter-paper">
+        <div class="letter-topline"><span>FROM THE ADVENTURE DESK</span><span>★ &nbsp; 21∞ &nbsp; ★</span></div>
+        <div class="letter-stamp" aria-hidden="true">★</div>
+        <p class="letter-date">A VERY IMPORTANT NOTE</p>
+        <h2 id="letterTitle">To infinity…<br><span>and beyond!</span></h2>
+        <div class="letter-rule"><span>✦</span></div>
+        <p class="letter-body" id="letterBody"></p>
+        <p class="letter-signoff">With wonder &amp; friendship,<br><span>The CSSP College Week Team</span></p>
+        <a class="sign-board-link" id="signBoardLink" href="#name-board">Sign the Board <span aria-hidden="true">→</span></a>
+      </div>
+    </div>
+  </dialog>
+  <script src="app.js" defer></script>
+</body>
+</html>
