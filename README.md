@@ -12,6 +12,18 @@ python3 -m http.server 8000 --bind 0.0.0.0
 
 Names are stored in this browser using `localStorage` until a shared Google Sheet is configured.
 
+## Deploy to Cloudflare Pages
+
+This is a static HTML/CSS/JavaScript site; it does not need a framework, package install, or server runtime. `build-cloudflare.sh` copies just the site and its required images into `dist/`.
+
+For a Cloudflare Pages project connected to this Git repository, use:
+
+- **Build command:** `sh ./build-cloudflare.sh`
+- **Build output directory:** `dist`
+- **Root directory:** `/` (the repository root)
+
+Do not set a custom deploy command for a Pages Git deployment; Pages handles publishing after the build. In particular, `npx wrangler deploy` is the Worker deploy command, not the Pages command, and is what caused Wrangler to look for a Worker static-assets configuration and fail. For a manual Wrangler upload instead, first build the files and then run `npx wrangler pages deploy dist --project-name YOUR_PAGES_PROJECT_NAME` (replace the placeholder with the Pages project name you created).
+
 ## Connect a Google Sheet
 
 1. Create a Google Sheet and open **Extensions → Apps Script**.
