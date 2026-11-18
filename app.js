@@ -2,7 +2,7 @@
  * 21nfinityAndBeyond — small, framework-free interaction layer.
  * Easy edits: palette lives in styles.css; letter copy and Apps Script URL live here.
  */
-const LETTER_COPY = "Dear CSSP Student, you've been chosen for something special. CSSP College Week is here, and this year we're going to infinity and beyond. Grab your friends, find your spark, and make this week one to remember. Sign the board below to show you're part of the adventure. Signed, The CSSP College Week Team";
+const LETTER_COPY = "Dear RAJAHs, you've been chosen for something special. CSSP College Week is here, and this year we're going to infinity and beyond. Grab your friends, find your spark, and make this week one to remember. Sign the board below to show you're part of the adventure.";
 // Paste the deployed Google Apps Script web-app URL here to sync names for all visitors.
 // Leave empty to use this browser's localStorage only.
 const GOOGLE_APPS_SCRIPT_URL = "";
