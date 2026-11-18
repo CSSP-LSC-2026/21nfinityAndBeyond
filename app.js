@@ -6,7 +6,9 @@ const LETTER_COPY = "Dear RAJAHs, you've been chosen for something special. CSSP
 // Paste the deployed Google Apps Script web-app URL here to sync names for all visitors.
 // Leave empty to use this browser's localStorage only.
 const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwfUY2wtn0457S6pAih69VQgnyI9S7EYvYQ7z0ufHAMC6SzZg5cPyVfFZXoTfsXwKP4CA/exec";
-const STORAGE_KEY = "21nfinityAndBeyond.explorers.v1";
+const LEGACY_STORAGE_KEY = "21nfinityAndBeyond.explorers.v1";
+const STORAGE_KEY = "21nfinityAndBeyond.explorers.v2";
+try { localStorage.removeItem(LEGACY_STORAGE_KEY); } catch (_) { /* storage may be disabled */ }
 const TAG_COLORS = ["tag-yellow", "tag-red", "tag-blue", "tag-green", "tag-pink"];
 // Curated English and Filipino profanity / slur terms. This is a practical local filter, not a claim to cover every language or spelling.
 const WHOLE_WORD_PROFANITY = ["dick", "fag", "rape", "coon"];
