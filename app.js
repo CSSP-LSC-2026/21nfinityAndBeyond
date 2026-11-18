@@ -149,8 +149,11 @@ async function loadNames() {
       }
     });
     localNames.forEach((entry) => {
+      // Keep only pending local-only names; Neon is authoritative for shared entries,
+      // so edits/deletions there also disappear from visitors' cached walls.
+      if (entry.shared === true) return;
       const key = entry.name.toLowerCase();
-      if (!byName.has(key)) byName.set(key, { ...entry, shared: entry.shared === true });
+      if (!byName.has(key)) byName.set(key, { ...entry, shared: false });
     });
     names = [...byName.values()];
     saveLocalNames();
