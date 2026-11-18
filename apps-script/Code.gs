@@ -6,6 +6,9 @@
  */
 const TAB_NAME = 'Explorers';
 const HEADERS = ['Name', 'Joined at'];
+// Leave blank when this is a script opened from the Sheet's Extensions menu.
+// For a standalone Apps Script project, paste the Sheet ID from its URL here.
+const SPREADSHEET_ID = '';
 // Keep in sync with the client-side English + Filipino profanity / slur lists in app.js.
 const WHOLE_WORD_BLOCKED = ['dick', 'fag', 'rape'];
 const BLOCKED_WORDS = [
@@ -30,6 +33,7 @@ function doGet(e) {
     else if (action === 'add') result = addName_(params.name);
     else result = { ok: false, message: 'Unknown action.' };
   } catch (err) {
+    console.error('Adventure wall request failed:', err);
     result = { ok: false, message: 'The adventure wall is temporarily unavailable.' };
   }
   const json = JSON.stringify(result).replace(/</g, '\\u003c');
@@ -37,9 +41,17 @@ function doGet(e) {
   return ContentService.createTextOutput(output).setMimeType(callback ? ContentService.MimeType.JAVASCRIPT : ContentService.MimeType.JSON);
 }
 
-function getSheet_() {
+function getSpreadsheet_() {
+  if (SPREADSHEET_ID) return SpreadsheetApp.openById(SPREADSHEET_ID);
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  if (!spreadsheet) throw new Error('Bind this script to a spreadsheet first.');
+  if (!spreadsheet) {
+    throw new Error('No active Sheet. Bind this script to a Sheet or set SPREADSHEET_ID.');
+  }
+  return spreadsheet;
+}
+
+function getSheet_() {
+  const spreadsheet = getSpreadsheet_();
   let sheet = spreadsheet.getSheetByName(TAB_NAME);
   if (!sheet) {
     sheet = spreadsheet.insertSheet(TAB_NAME);
