@@ -11,7 +11,10 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="room-scene" aria-hidden="true"></div>
+  <div class="room-scene" aria-hidden="true">
+    <span class="ambient-star star-a">✦</span><span class="ambient-star star-b">✧</span>
+    <span class="ambient-star star-c">✦</span><span class="ambient-star star-d">✧</span>
+  </div>
   <header class="site-header">
     <a class="brand" href="#top" aria-label="21nfinityAndBeyond home"><img src="assets/21nfinity-logo.png" alt="21nfinityAndBeyond"></a>
     <div class="week-stamp"><span class="stamp-star">★</span> CSSP COLLEGE WEEK <span class="stamp-star">★</span></div>
@@ -33,7 +36,7 @@
         </div>
         <button class="alien-egg" id="alienEgg" type="button" aria-label="Say hello to the little alien">👽</button>
         <div class="box-shadow"></div>
-        <div class="attic-box" id="atticBox">
+        <div class="attic-box" id="atticBox" role="button" tabindex="0" aria-label="Open the attic surprise box" aria-controls="letterDialog">
           <div class="box-back"></div>
           <div class="box-flap flap-left"></div><div class="box-flap flap-right"></div>
           <div class="box-inside"></div>

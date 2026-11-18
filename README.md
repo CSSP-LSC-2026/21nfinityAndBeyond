@@ -28,3 +28,5 @@ The endpoint uses JSONP to work from a static site without a separate server or 
 - Palette and fonts: CSS variables at the top of `styles.css`
 - Google Sheets connection: `GOOGLE_APPS_SCRIPT_URL` in `app.js`
 - Logo / favicon: `assets/21nfinity-logo.png` (the supplied transparent logo)
+- Bedroom backdrop: `assets/bedroom-backdrop.jpg` (original generated room scene)
+- Nickname moderation terms: `PROFANITY` in `app.js` and `BLOCKED_WORDS` in `apps-script/Code.gs`

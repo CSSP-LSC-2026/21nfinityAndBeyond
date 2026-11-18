@@ -8,7 +8,19 @@ const LETTER_COPY = "Dear RAJAHs, you've been chosen for something special. CSSP
 const GOOGLE_APPS_SCRIPT_URL = "";
 const STORAGE_KEY = "21nfinityAndBeyond.explorers.v1";
 const TAG_COLORS = ["tag-yellow", "tag-red", "tag-blue", "tag-green", "tag-pink"];
-const PROFANITY = ["fuck", "shit", "bitch", "bastard", "asshole", "cunt", "dickhead", "slut", "whore"];
+// Curated English and Filipino profanity / slur terms. This is a practical local filter, not a claim to cover every language or spelling.
+const WHOLE_WORD_PROFANITY = ["dick", "fag", "rape"];
+const PROFANITY = [
+  "fuck", "fucking", "fucker", "fuckface", "motherfucker", "fck", "fuk", "fuq", "phuck",
+  "shit", "shitty", "bullshit", "bullshitter", "shithead", "shitbag", "shitfuck", "shite", "bitch", "bitches", "sonofabitch", "bastard",
+  "asshole", "arsehole", "asswipe", "asshat", "dumbass", "jackass", "cunt", "dickhead", "cock", "cocksucker", "pussy", "whore", "slut", "twat", "prick",
+  "wanker", "bollocks", "tosser", "fucktard", "porn", "pornhub", "hentai", "dildo", "handjob", "blowjob", "rimjob", "jerkoff", "jackoff", "masturbate", "masturbation", "cumshot", "cumslut", "jizz", "orgasm", "titties", "boobs", "boobies", "ballsack", "rapist", "molest", "pedophile", "bestiality",
+  "nigger", "nigga", "faggot", "dyke", "kike", "chink", "spic", "wetback", "tranny", "retard", "coon", "raghead",
+  "putangina", "putanginamo", "putanginaka", "potangina", "potanginamo", "tangina", "tanginamo", "tanginaka", "tngina", "tngn", "amputa", "ampota", "pota", "puta", "pukinamo", "pukinangina", "pakingshet",
+  "puki", "puke", "pekpek", "kiki", "tite", "titi", "etits", "burat", "kantot", "kantutan", "jakol", "pokpok",
+  "gago", "gaga", "gagi", "bobo", "tanga", "ulol", "kupal", "tarantado", "punyeta", "pakshet", "pakshit", "pakyu",
+  "leche", "letse", "lintik", "hinayupak", "buwisit", "bwisit", "yawa", "buang", "bilat", "bayag", "hayopka", "siraulo", "inutil", "peste", "pisti", "yati", "atay", "amaw", "pistingyawa"
+];
 
 const $ = (selector) => document.querySelector(selector);
 const stage = $(".scene-stage");
@@ -38,9 +50,22 @@ function saveLocalNames() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(names)); } catch (_) { /* private browsing/storage disabled */ }
 }
 function normalizeName(value) { return value.trim().replace(/\s+/g, " "); }
+function moderationText(value) {
+  return value.toLocaleLowerCase().normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[4@]/g, "a").replace(/[3]/g, "e").replace(/[1!|]/g, "i")
+    .replace(/[0]/g, "o").replace(/[5$]/g, "s").replace(/[7+]/g, "t")
+    .replace(/ph/g, "f").replace(/([a-z])\1+/g, "$1");
+}
+function normalizeForModeration(value) { return moderationText(value).replace(/[^a-z]/g, ""); }
 function isProfane(value) {
-  const compact = value.toLowerCase().replace(/[^a-z0-9]/g, "");
-  return PROFANITY.some((word) => compact.includes(word.replace(/[^a-z0-9]/g, "")));
+  const separated = moderationText(value);
+  const compact = separated.replace(/[^a-z]/g, "");
+  const wholeWordMatch = WHOLE_WORD_PROFANITY.some((word) => {
+    const pattern = word.split("").join("[^a-z]*");
+    return new RegExp(`(?:^|[^a-z])${pattern}(?:$|[^a-z])`).test(separated);
+  });
+  return wholeWordMatch || PROFANITY.some((word) => compact.includes(normalizeForModeration(word)));
 }
 function duplicateName(value) { return names.some((item) => item.name.toLocaleLowerCase() === value.toLocaleLowerCase()); }
 function updateCount() {
@@ -180,6 +205,20 @@ function openBox() {
   }, wait);
 }
 openBoxButton.addEventListener("click", openBox);
+box.addEventListener("click", openBox);
+stage.addEventListener("pointermove", (event) => {
+  if (event.pointerType === "touch" || reducedMotion.matches || !box.contains(event.target)) return;
+  const bounds = box.getBoundingClientRect();
+  const horizontal = (event.clientX - (bounds.left + bounds.width / 2)) / (bounds.width / 2);
+  box.style.setProperty("--box-tilt", `${Math.max(-2.2, Math.min(2.2, horizontal * 2.2)).toFixed(2)}deg`);
+});
+stage.addEventListener("pointerleave", () => box.style.setProperty("--box-tilt", "0deg"));
+box.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    openBox();
+  }
+});
 
 function closeLetter() {
   if (dialog.open && typeof dialog.close === "function") dialog.close();

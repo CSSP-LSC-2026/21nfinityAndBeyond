@@ -6,7 +6,19 @@
  */
 const TAB_NAME = 'Explorers';
 const HEADERS = ['Name', 'Joined at'];
-const BLOCKED_WORDS = ['fuck', 'shit', 'bitch', 'bastard', 'asshole', 'cunt', 'dickhead', 'slut', 'whore'];
+// Keep in sync with the client-side English + Filipino profanity / slur lists in app.js.
+const WHOLE_WORD_BLOCKED = ['dick', 'fag', 'rape'];
+const BLOCKED_WORDS = [
+  'fuck', 'fucking', 'fucker', 'fuckface', 'motherfucker', 'fck', 'fuk', 'fuq', 'phuck',
+  'shit', 'shitty', 'bullshit', 'bullshitter', 'shithead', 'shitbag', 'shitfuck', 'shite', 'bitch', 'bitches', 'sonofabitch', 'bastard',
+  'asshole', 'arsehole', 'asswipe', 'asshat', 'dumbass', 'jackass', 'cunt', 'dickhead', 'cock', 'cocksucker', 'pussy', 'whore', 'slut', 'twat', 'prick',
+  'wanker', 'bollocks', 'tosser', 'fucktard', 'porn', 'pornhub', 'hentai', 'dildo', 'handjob', 'blowjob', 'rimjob', 'jerkoff', 'jackoff', 'masturbate', 'masturbation', 'cumshot', 'cumslut', 'jizz', 'orgasm', 'titties', 'boobs', 'boobies', 'ballsack', 'rapist', 'molest', 'pedophile', 'bestiality',
+  'nigger', 'nigga', 'faggot', 'dyke', 'kike', 'chink', 'spic', 'wetback', 'tranny', 'retard', 'coon', 'raghead',
+  'putangina', 'putanginamo', 'putanginaka', 'potangina', 'potanginamo', 'tangina', 'tanginamo', 'tanginaka', 'tngina', 'tngn', 'amputa', 'ampota', 'pota', 'puta', 'pukinamo', 'pukinangina', 'pakingshet',
+  'puki', 'puke', 'pekpek', 'kiki', 'tite', 'titi', 'etits', 'burat', 'kantot', 'kantutan', 'jakol', 'pokpok',
+  'gago', 'gaga', 'gagi', 'bobo', 'tanga', 'ulol', 'kupal', 'tarantado', 'punyeta', 'pakshet', 'pakshit', 'pakyu',
+  'leche', 'letse', 'lintik', 'hinayupak', 'buwisit', 'bwisit', 'yawa', 'buang', 'bilat', 'bayag', 'hayopka', 'siraulo', 'inutil', 'peste', 'pisti', 'yati', 'atay', 'amaw', 'pistingyawa'
+];
 
 function doGet(e) {
   const params = (e && e.parameter) || {};
@@ -50,13 +62,30 @@ function listNames_() {
     .map(name => ({ name }));
 }
 
+function moderationText_(value) {
+  return String(value || '').toLocaleLowerCase().normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[4@]/g, 'a').replace(/[3]/g, 'e').replace(/[1!|]/g, 'i')
+    .replace(/[0]/g, 'o').replace(/[5$]/g, 's').replace(/[7+]/g, 't')
+    .replace(/ph/g, 'f').replace(/([a-z])\1+/g, '$1');
+}
+function normalizeForModeration_(value) {
+  return moderationText_(value).replace(/[^a-z]/g, '');
+}
+function hasWholeWordBlock_(separated, word) {
+  const pattern = word.split('').join('[^a-z]*');
+  return new RegExp('(?:^|[^a-z])' + pattern + '(?:$|[^a-z])').test(separated);
+}
+
 function addName_(rawName) {
   const name = String(rawName || '').trim().replace(/\s+/g, ' ');
   if (!name) return { ok: false, message: 'Please enter a name.' };
   if ([...name].length > 30) return { ok: false, message: 'Names must be 30 characters or fewer.' };
-  const compact = name.toLowerCase().replace(/[^a-z0-9]/g, '');
-  if (BLOCKED_WORDS.some(word => compact.includes(word.replace(/[^a-z0-9]/g, '')))) {
-    return { ok: false, message: 'Please keep the board friendly for everyone.' };
+  const separated = moderationText_(name);
+  const normalized = normalizeForModeration_(name);
+  const wholeWordBlocked = WHOLE_WORD_BLOCKED.some(word => hasWholeWordBlock_(separated, word));
+  if (wholeWordBlocked || BLOCKED_WORDS.some(word => normalized.includes(normalizeForModeration_(word)))) {
+    return { ok: false, message: 'Please choose a nickname without profanity or slurs.' };
   }
 
   // Serialize duplicate checks and writes so simultaneous submissions don't race.
