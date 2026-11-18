@@ -15,7 +15,7 @@ Names are stored in this browser using `localStorage` until a shared Google Shee
 ## Connect a Google Sheet
 
 1. Create a Google Sheet and open **Extensions → Apps Script**.
-2. Paste the contents of [`apps-script/Code.gs`](apps-script/Code.gs) into the editor. The script creates an `Explorers` tab and headings the first time it runs. If you created a standalone Apps Script project rather than opening Apps Script from the Sheet, set `SPREADSHEET_ID` in `Code.gs` to the ID from the Sheet URL (`/spreadsheets/d/THIS_PART/edit`).
+2. Paste the contents of [`apps-script/Code.gs`](apps-script/Code.gs) into the editor. The script creates an `Explorers` tab and headings the first time it runs. `SPREADSHEET_ID` is configured for the Sheet you provided; change it if you switch to another spreadsheet.
 3. Select **Deploy → New deployment → Web app**. Set **Execute as** to *Me* and access to *Anyone*, then deploy and authorize it. (Anyone with the URL can submit a name; use only for a public event board.)
 4. Copy the deployed Web app URL into `GOOGLE_APPS_SCRIPT_URL` near the top of `app.js`.
 5. Reload the site. The Apps Script endpoint reads and appends names in the spreadsheet; if the endpoint is temporarily unavailable, the page keeps the visitor's locally cached names.

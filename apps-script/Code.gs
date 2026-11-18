@@ -8,7 +8,7 @@ const TAB_NAME = 'Explorers';
 const HEADERS = ['Name', 'Joined at'];
 // Leave blank when this is a script opened from the Sheet's Extensions menu.
 // For a standalone Apps Script project, paste the Sheet ID from its URL here.
-const SPREADSHEET_ID = '';
+const SPREADSHEET_ID = '1RnUqoFjbQbjuppKmWtTzmUYt-rptyVSyJiX_EbEOIN4';
 // Keep in sync with the client-side English + Filipino profanity / slur lists in app.js.
 const WHOLE_WORD_BLOCKED = ['dick', 'fag', 'rape'];
 const BLOCKED_WORDS = [
