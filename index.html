@@ -84,8 +84,13 @@
   </main>
 
   <footer class="site-footer"><span>CSSP College Week <i>·</i> 21nfinityAndBeyond</span><span class="footer-note">TOGETHER, WE GO A LITTLE FURTHER <b>✦</b></span><a href="#top" class="back-top" aria-label="Back to top">↑</a></footer>
-  <button class="sound-toggle" id="soundToggle" type="button" aria-pressed="false" aria-label="Turn sound on"><span class="sound-icon">♪</span><span class="sound-label">Sound off</span></button>
+  <button class="sound-toggle" id="soundToggle" type="button" aria-pressed="false" aria-label="Turn toy sounds on"><span class="sound-icon">♪</span><span class="sound-label">Toy sounds off</span></button>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <aside class="music-dock" id="musicDock" aria-label="CSSP College Week music player" hidden>
+    <div class="music-dock-heading"><span>♫ &nbsp; CSSP College Week soundtrack</span><button id="stopMusic" type="button" aria-label="Stop music and close player">×</button></div>
+    <iframe id="musicFrame" title="CSSP College Week music video" allow="autoplay; encrypted-media; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    <p class="music-help" id="musicHelp" role="status" aria-live="polite">Use the video controls to pause or adjust volume.</p>
+  </aside>
 
   <dialog class="letter-dialog" id="letterDialog" aria-labelledby="letterTitle">
     <div class="letter-shell">
@@ -113,6 +118,19 @@
       <div class="welcome-ribbon">See you at CSSP College Week!<small>Our next big adventure is waiting.</small></div>
       <button class="welcome-continue" id="continueAdventure" type="button">Keep exploring <span aria-hidden="true">→</span></button>
       <p class="welcome-signoff">To infinity and beyond <span>✦</span></p>
+    </div>
+  </dialog>
+  <dialog class="welcome-dialog entry-dialog" id="entryDialog" aria-labelledby="entryTitle">
+    <div class="welcome-card entry-card">
+      <button class="welcome-close" id="closeEntry" type="button" aria-label="Close welcome message">×</button>
+      <div class="welcome-sparkles" aria-hidden="true"><span>✦</span><span>✧</span><span>✦</span></div>
+      <div class="welcome-rocket" aria-hidden="true">🚀</div>
+      <p class="welcome-kicker">WELCOME, EXPLORER</p>
+      <h2 id="entryTitle">Ready for an<br><span>adventure?</span></h2>
+      <p class="welcome-copy">CSSP College Week is calling! Tap below to enter the adventure and start the music.</p>
+      <button class="welcome-continue entry-play-button" id="startWithMusic" type="button">Start adventure + music <span aria-hidden="true">→</span></button>
+      <button class="entry-skip" id="continueSilent" type="button">Continue without music</button>
+      <p class="welcome-signoff">Music starts after your tap <span>✦</span></p>
     </div>
   </dialog>
   <script src="app.js" defer></script>

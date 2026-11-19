@@ -31,6 +31,10 @@ const nameForm = $("#nameForm");
 const nameInput = $("#nameInput");
 const nameTags = $("#nameTags");
 const formMessage = $("#formMessage");
+const soundToggle = $("#soundToggle");
+const entryDialog = $("#entryDialog");
+const musicDock = $("#musicDock");
+const musicFrame = $("#musicFrame");
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 let names = [];
 let soundEnabled = false;
@@ -268,13 +272,35 @@ $("#alienEgg").addEventListener("click", () => {
   }
 });
 
-$("#soundToggle").addEventListener("click", (event) => {
-  soundEnabled = !soundEnabled;
-  const button = event.currentTarget;
-  button.setAttribute("aria-pressed", String(soundEnabled));
-  button.setAttribute("aria-label", soundEnabled ? "Turn sound off" : "Turn sound on");
-  button.querySelector(".sound-label").textContent = soundEnabled ? "Sound on" : "Sound off";
-  if (soundEnabled) { playSound("stick"); showToast("Sound is on"); }
+function setSoundEnabled(enabled) {
+  soundEnabled = enabled;
+  soundToggle.setAttribute("aria-pressed", String(soundEnabled));
+  soundToggle.setAttribute("aria-label", soundEnabled ? "Turn toy sounds off" : "Turn toy sounds on");
+  soundToggle.querySelector(".sound-label").textContent = soundEnabled ? "Toy sounds on" : "Toy sounds off";
+}
+soundToggle.addEventListener("click", () => {
+  setSoundEnabled(!soundEnabled);
+  if (soundEnabled) { playSound("stick"); showToast("Toy sounds are on"); }
+});
+
+function closeEntryMessage() {
+  if (entryDialog.open && typeof entryDialog.close === "function") entryDialog.close();
+  else entryDialog.removeAttribute("open");
+}
+function startAdventureWithMusic() {
+  // This click is the visitor's gesture that lets mobile browsers start audible media.
+  musicDock.hidden = false;
+  musicFrame.src = "https://www.youtube-nocookie.com/embed/1MPZRcyTrcU?autoplay=1&mute=0&playsinline=1&controls=1&rel=0";
+  closeEntryMessage();
+  window.setTimeout(() => $("#stopMusic").focus({ preventScroll: true }), 0);
+}
+$("#startWithMusic").addEventListener("click", startAdventureWithMusic);
+$("#closeEntry").addEventListener("click", closeEntryMessage);
+$("#continueSilent").addEventListener("click", closeEntryMessage);
+$("#stopMusic").addEventListener("click", () => {
+  musicFrame.src = "about:blank";
+  musicDock.hidden = true;
+  showToast("Music stopped");
 });
 
 $("#characterCount").textContent = `0 / ${nameInput.maxLength}`;
@@ -315,3 +341,5 @@ nameForm.addEventListener("submit", async (event) => {
 });
 
 loadNames();
+if (typeof entryDialog.showModal === "function") entryDialog.showModal();
+else entryDialog.setAttribute("open", "");
