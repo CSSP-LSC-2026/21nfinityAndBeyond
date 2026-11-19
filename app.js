@@ -35,6 +35,7 @@ const soundToggle = $("#soundToggle");
 const entryDialog = $("#entryDialog");
 const musicDock = $("#musicDock");
 const musicFrame = $("#musicFrame");
+const startWithMusicButton = $("#startWithMusic");
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 let names = [];
 let soundEnabled = false;
@@ -287,18 +288,37 @@ function closeEntryMessage() {
   if (entryDialog.open && typeof entryDialog.close === "function") entryDialog.close();
   else entryDialog.removeAttribute("open");
 }
+function sendMusicCommand(command) {
+  musicFrame.contentWindow?.postMessage(JSON.stringify({ event: "command", func: command, args: [] }), "*");
+}
+// Load the YouTube player while the welcome prompt is open. The CTA stays disabled
+// until the player is ready, so its click can directly call playVideo in that gesture.
+const musicUrl = new URL("https://www.youtube-nocookie.com/embed/1MPZRcyTrcU");
+musicUrl.searchParams.set("enablejsapi", "1");
+musicUrl.searchParams.set("autoplay", "0");
+musicUrl.searchParams.set("mute", "0");
+musicUrl.searchParams.set("playsinline", "1");
+musicUrl.searchParams.set("controls", "1");
+musicUrl.searchParams.set("rel", "0");
+musicUrl.searchParams.set("origin", window.location.origin);
+musicFrame.addEventListener("load", () => {
+  startWithMusicButton.disabled = false;
+  startWithMusicButton.innerHTML = 'Start adventure + music <span aria-hidden="true">→</span>';
+});
+musicFrame.src = musicUrl.toString();
 function startAdventureWithMusic() {
-  // This click is the visitor's gesture that lets mobile browsers start audible media.
+  if (startWithMusicButton.disabled) return;
   musicDock.hidden = false;
-  musicFrame.src = "https://www.youtube-nocookie.com/embed/1MPZRcyTrcU?autoplay=1&mute=0&playsinline=1&controls=1&rel=0";
+  // This player command is issued directly inside the visitor's click handler.
+  sendMusicCommand("playVideo");
   closeEntryMessage();
   window.setTimeout(() => $("#stopMusic").focus({ preventScroll: true }), 0);
 }
-$("#startWithMusic").addEventListener("click", startAdventureWithMusic);
+startWithMusicButton.addEventListener("click", startAdventureWithMusic);
 $("#closeEntry").addEventListener("click", closeEntryMessage);
 $("#continueSilent").addEventListener("click", closeEntryMessage);
 $("#stopMusic").addEventListener("click", () => {
-  musicFrame.src = "about:blank";
+  sendMusicCommand("stopVideo");
   musicDock.hidden = true;
   showToast("Music stopped");
 });

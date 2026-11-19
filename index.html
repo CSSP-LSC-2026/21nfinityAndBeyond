@@ -88,8 +88,8 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <aside class="music-dock" id="musicDock" aria-label="CSSP College Week music player" hidden>
     <div class="music-dock-heading"><span>♫ &nbsp; CSSP College Week soundtrack</span><button id="stopMusic" type="button" aria-label="Stop music and close player">×</button></div>
-    <iframe id="musicFrame" title="CSSP College Week music video" allow="autoplay; encrypted-media; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-    <p class="music-help" id="musicHelp" role="status" aria-live="polite">Use the video controls to pause or adjust volume.</p>
+    <iframe id="musicFrame" title="CSSP College Week music video" loading="eager" allow="autoplay; encrypted-media; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    <p class="music-help" id="musicHelp" role="status" aria-live="polite">The music starts from your welcome-button tap. Use the video controls to pause or adjust volume.</p>
   </aside>
 
   <dialog class="letter-dialog" id="letterDialog" aria-labelledby="letterTitle">
@@ -128,7 +128,7 @@
       <p class="welcome-kicker">WELCOME, EXPLORER</p>
       <h2 id="entryTitle">Ready for an<br><span>adventure?</span></h2>
       <p class="welcome-copy">CSSP College Week is calling! Tap below to enter the adventure and start the music.</p>
-      <button class="welcome-continue entry-play-button" id="startWithMusic" type="button">Start adventure + music <span aria-hidden="true">→</span></button>
+      <button class="welcome-continue entry-play-button" id="startWithMusic" type="button" disabled>Loading music…</button>
       <button class="entry-skip" id="continueSilent" type="button">Continue without music</button>
       <p class="welcome-signoff">Music starts after your tap <span>✦</span></p>
     </div>
